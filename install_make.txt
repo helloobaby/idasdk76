@@ -1,0 +1,179 @@
+
+
+Please read "readme.txt" before reading this file!
+
+
+Preparing the build environment on MS Windows
+---------------------------------------------
+
+  Prerequisites
+  =============
+
+  In addition to the compiler specified in readme.txt, Cygwin is required
+  on MS Windows. It is available from:
+
+    https://www.cygwin.com/
+
+  Make sure to install the 32-bit version of Cygwin (setup-x86.exe) and to
+  install the 'make' package.
+
+
+  Build environment
+  =================
+
+  On MS Windows, you may build the SDK using either the Cygwin shell or the
+  Command Prompt (either cmd.exe or a Developer Command Prompt for Visual
+  Studio).
+
+  If you wish to use the Cygwin shell to build the SDK, start it with:
+
+    > C:\cygwin\cygwin.bat
+
+  If you wish to use the Command Prompt, you must add Cygwin's bin directory
+  to your PATH:
+
+    > set PATH=C:\cygwin\bin;%PATH%
+
+  You should then navigate to IDA's SDK directory, for example:
+
+    > cd C:\idasdk
+
+  The MS Windows build automatically generates a configuration file from the
+  top-level directory of the SDK. To build this configuration file directly,
+  invoke make from the top-level directory with:
+
+    C:\idasdk>make env
+
+  or, in a cygwin shell:
+
+    /cygdrive/c/idasdk $ make env
+
+  If this file is not generated, you will hit this error message:
+
+    cl : Command line error D8022 : cannot open '../../x64_win_vc_32.cfg'
+
+
+  Preparing the SDK
+  =================
+
+  The SDK provides a linker wrapper under the 'bin' directory. You may have to
+  set the executable flag on the 'bin\ld.exe' binary.
+
+  You must add the SDK's bin directory to your PATH.
+
+  On MS Windows' Command Prompt:
+
+    C:\idasdk>set PATH=C:\idasdk\bin;%PATH%
+
+  or, in a cygwin shell:
+
+    /cygdrive/c/idasdk $ export PATH=/cygdrive/c/idasdk/bin:$PATH
+
+    (please note that the separator is ':' here, not ';' as it would in cmd.exe)
+
+
+Preparing the build environment on Linux and Mac OS X
+-----------------------------------------------------
+
+  You must add the SDK's bin directory to your PATH.
+
+    $ export PATH=~/idasdk/bin:$PATH
+
+
+Target platform
+---------------
+
+  The target platform must be specified using one of the following environment
+  variables:
+
+    - MS Windows: __NT__
+    - Linux:      __LINUX__
+    - Mac OS X:   __MAC__
+
+  If no target platform is specified, the build defaults to MS Windows (__NT__).
+
+  It is a good idea to specify the platform directly on your ~/.bashrc file:
+    - MS Windows (Cygwin):
+      export __NT__=1
+    - Linux:
+      export __LINUX__=1
+    - Mac OS X:
+      export __MAC__=1
+
+
+How to build the SDK from the command-line
+------------------------------------------
+
+  All source files are the same for all platforms and are compiled using the
+  same makefiles. The build commands are different between operating systems.
+
+
+  On Linux and Mac OS X
+  =====================
+
+  It should suffice to invoke 'make' directly:
+
+    make
+
+  If you did not export the target platform's environment variable, you may
+  specify the target in the command line, for example:
+
+    make __LINUX__=1
+
+  To build for IDA64 (64-bit ea_t size):
+
+    make __EA64__=1
+
+  Please note that both ida32 and ida64 are 64-bit applications.
+
+  To build 32-bit debug servers, you must set the __X86__ variable. This can
+  be achieved in the command line with:
+
+    make __X86__=1
+
+  You may also run the 'idamake.pl' script instead of 'make'. It is a post-
+  processing script for make, and will prevent the printing of some warnings
+  which cannot be disabled in the compiler. For example, there is this warning
+  from gcc:
+
+    warning: format ‘%a’ expects argument of type ‘double’, but argument 2 has type ‘ea_t {aka unsigned int}’ [-Wformat=]
+
+  There is also an environment option IDAMAKE_SIMPLIFY which can be passed to
+  'idamake.pl', which turns on filtering of compiler command line.
+
+  Some examples:
+    make __LINUX__=1                    -- non-optimized linux build
+    make NDEBUG=1 __MAC__=1             -- optimized mac build
+    make NDEBUG=1 __NT__=1 __EA64__=1   -- optimized ida64 windows build
+    IDAMAKE_SIMPLIFY=1 idamake.pl [...] -- filter build system output
+
+
+  On MS Windows
+  =============
+
+  The build target is selected by using special bat files, present in the bin/
+  directory
+
+    mo.bat  - will build components for ida.exe
+    mmo.bat - will build components for ida64.exe
+
+  Note that 'm*.bat' files accept a '-j' argument, to parallelize the build:
+
+  E.g,
+
+    C:\idasdk>mo.bat -j 12
+
+  or, in a cygwin shell:
+
+    /cygdrive/c/idasdk $ mo.bat -j 12
+
+Aliases
+-------
+
+  Creating aliases for the build commands is a good idea. I have the following
+  in my .bashrc file:
+
+  export __LINUX__=1
+  export PATH=~/idasdk/bin:$PATH
+  alias mx='make 2>&1'
+  alias mmx='__EA64__=1 make 2>&1'
